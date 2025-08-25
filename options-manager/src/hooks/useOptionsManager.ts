@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import type { Option } from '../app/types/options'
+import type { Option } from '../types/options'
 
 /**
  * A custom hook to manage a list of editable, reorderable, and deletable options.

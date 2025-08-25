@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import { Container, Typography, Box, Button } from '@mui/material'
+import { Container, Typography, Box, Button, Grid } from '@mui/material' // Added Grid
 import { ArrowBack, Add as AddIcon } from '@mui/icons-material'
 import Link from 'next/link'
 import {
@@ -15,7 +15,7 @@ import { OptionEditForm } from '../../components/shared/OptionEditForm'
 import { getContrastColor } from '../../utils/colorUtils'
 import type { Option } from '../../types/options'
 
-// Initial data for the page
+// Initial data for the page (no changes here)
 const initialPriorities: Option[] = [
   {
     id: 'item-1',
@@ -47,25 +47,16 @@ const initialPriorities: Option[] = [
   },
 ]
 
-// Memoized component for a single priority item
+// PriorityItem component is updated to remove the dynamic 'width' prop
 const PriorityItem = React.memo(
-  ({
-    item,
-    width,
-    onEdit,
-  }: {
-    item: Option
-    width: number
-    onEdit: () => void
-  }) => {
+  ({ item, onEdit }: { item: Option; onEdit: () => void }) => {
     const textColor = getContrastColor(item.color)
     return (
       <Box
         onClick={onEdit}
         sx={{
-          width: `${width}px`,
+          width: '100%', // Item now takes full width of the grid column
           p: 1.5,
-          mb: 1.5,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -85,6 +76,7 @@ const PriorityItem = React.memo(
     )
   }
 )
+PriorityItem.displayName = 'PriorityItem' // Added for ESLint best practice
 
 export default function PriorityManagerPage() {
   const {
@@ -108,7 +100,9 @@ export default function PriorityManagerPage() {
   )
 
   return (
-    <Container>
+    <Container maxWidth='md'>
+      {' '}
+      {/* Set a maxWidth for better appearance */}
       <Box sx={{ my: 4 }}>
         <Button component={Link} href='/' startIcon={<ArrowBack />}>
           Back to Home
@@ -136,22 +130,21 @@ export default function PriorityManagerPage() {
           Drag to reorder • Click a card to edit
         </Typography>
       </Box>
-
       <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId='pyramid-droppable'>
+        <Droppable droppableId='list-droppable'>
           {(provided) => (
-            <Box
-              {...provided.droppableProps}
+            // REPLACED the old Flexbox Box with the new Grid standard
+            <Grid
               ref={provided.innerRef}
+              {...provided.droppableProps}
               sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
+                display: 'grid',
+                gap: 1.5, // Replaces mb on items for consistent spacing
+                gridTemplateColumns: '1fr', // Defines a single column layout
               }}
             >
               {sortedOptions.map((item, index) => {
                 const isEditing = editingId === item.id
-                const pyramidWidth = 300 + index * 50
                 return (
                   <Draggable
                     key={item.id}
@@ -168,9 +161,7 @@ export default function PriorityManagerPage() {
                         {isEditing ? (
                           <Box
                             sx={{
-                              width: `${pyramidWidth}px`,
                               p: 1,
-                              mb: 1.5,
                               borderRadius: 2,
                               bgcolor: 'grey.200',
                             }}
@@ -183,9 +174,9 @@ export default function PriorityManagerPage() {
                             />
                           </Box>
                         ) : (
+                          // PriorityItem no longer needs a width prop
                           <PriorityItem
                             item={item}
-                            width={pyramidWidth}
                             onEdit={() => setEditingId(item.id)}
                           />
                         )}
@@ -199,9 +190,7 @@ export default function PriorityManagerPage() {
               {isAdding && (
                 <Box
                   sx={{
-                    width: `${300 + options.length * 50}px`,
                     p: 1,
-                    mt: 1,
                     borderRadius: 2,
                     bgcolor: 'grey.200',
                   }}
@@ -217,7 +206,7 @@ export default function PriorityManagerPage() {
                   />
                 </Box>
               )}
-            </Box>
+            </Grid>
           )}
         </Droppable>
       </DragDropContext>

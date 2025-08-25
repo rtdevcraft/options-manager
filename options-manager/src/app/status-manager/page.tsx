@@ -1,16 +1,12 @@
 'use client'
 
 import React, { useMemo } from 'react'
+import { Container, Typography, Box, Button, Grid, Paper } from '@mui/material' // Added Grid and Paper
 import {
-  Container,
-  Typography,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Stack,
-} from '@mui/material'
-import { ArrowBack, Add as AddIcon } from '@mui/icons-material'
+  ArrowBack,
+  Add as AddIcon,
+  DragIndicator as DragIndicatorIcon,
+} from '@mui/icons-material'
 import Link from 'next/link'
 import {
   DragDropContext,
@@ -18,72 +14,86 @@ import {
   Draggable,
   DropResult,
 } from '@hello-pangea/dnd'
-import { useOptionsManager } from '../../hooks/useOptionsManager'
-import { OptionEditForm } from '../../components/shared/OptionEditForm'
-import { getContrastColor } from '../../utils/colorUtils'
-import type { Option } from '../../types/options'
+import { useOptionsManager } from '@/hooks/useOptionsManager'
+import { OptionEditForm } from '@/components/shared/OptionEditForm'
+import { getContrastColor } from '@/utils/colorUtils'
+import type { Option } from '@/types/options'
 
 // Initial data for the page
-const initialStatuses: Option[] = [
-  { id: '1', name: 'OPEN', color: '#2196f3', order: 0, active: true },
-  { id: '2', name: 'IN PROGRESS', color: '#ff9800', order: 1, active: true },
-  { id: '3', name: 'REVIEW', color: '#9c27b0', order: 2, active: true },
-  { id: '4', name: 'DONE', color: '#4caf50', order: 3, active: true },
+const initialClassifications: Option[] = [
+  {
+    id: '1',
+    name: 'BUG',
+    color: '#f44336',
+    order: 0,
+    active: true,
+    type: 'classification',
+  },
+  {
+    id: '2',
+    name: 'FEATURE',
+    color: '#2196f3',
+    order: 1,
+    active: true,
+    type: 'classification',
+  },
+  {
+    id: '3',
+    name: 'IMPROVEMENT',
+    color: '#ff9800',
+    order: 2,
+    active: true,
+    type: 'classification',
+  },
+  {
+    id: '4',
+    name: 'DOCUMENTATION',
+    color: '#795548',
+    order: 3,
+    active: true,
+    type: 'classification',
+  },
 ]
 
-// Memoized component for a single status item to improve performance
-const StatusItem = React.memo(
-  ({
-    status,
-    isEditing,
-    onEdit,
-    ...dragProps
-  }: {
-    status: Option
-    isEditing: boolean
-    onEdit: () => void
-    [key: string]: any
-  }) => {
-    const textColor = getContrastColor(status.color)
-
+const ClassificationItem = React.memo(
+  ({ item, onEdit }: { item: Option; onEdit: () => void }) => {
+    const textColor = getContrastColor(item.color)
     return (
       <Box
+        display='flex'
+        alignItems='center'
+        width='100%'
         onClick={onEdit}
         sx={{
-          p: 2,
-          borderRadius: 2,
-          backgroundColor: status.color,
-          color: textColor,
-          minWidth: 140,
-          cursor: 'grab',
-          textAlign: 'center',
+          cursor: 'pointer',
+          p: 1, // Add some padding for better click area
+          borderRadius: 1,
+          '&:hover': { backgroundColor: 'action.hover' },
         }}
-        {...dragProps}
       >
+        <DragIndicatorIcon
+          sx={{ mr: 1, color: 'text.disabled', cursor: 'grab' }}
+        />
         <Box
           sx={{
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            backgroundColor: 'rgba(255,255,255,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mb: 1,
-            mx: 'auto',
+            px: 1,
+            py: 0.5,
+            borderRadius: 1,
+            backgroundColor: item.color,
+            color: textColor,
           }}
         >
-          {status.order + 1}
+          <Typography variant='body2' sx={{ fontWeight: 'bold' }}>
+            {item.name}
+          </Typography>
         </Box>
-        <Typography variant='caption' sx={{ fontWeight: 'bold' }}>
-          {status.name}
-        </Typography>
       </Box>
     )
   }
 )
+ClassificationItem.displayName = 'ClassificationItem'
 
-export default function StatusManagerPage() {
+export default function ClassificationManagerPage() {
   const {
     options,
     editingId,
@@ -91,7 +101,7 @@ export default function StatusManagerPage() {
     handleReorder,
     handleSave,
     handleDelete,
-  } = useOptionsManager(initialStatuses)
+  } = useOptionsManager(initialClassifications)
   const [isAdding, setIsAdding] = React.useState(false)
 
   const onDragEnd = (result: DropResult) => {
@@ -105,120 +115,104 @@ export default function StatusManagerPage() {
   )
 
   return (
-    <Container maxWidth='lg' sx={{ py: 4 }}>
+    <Container maxWidth='md' sx={{ py: 4 }}>
       <Box mb={4}>
         <Button component={Link} href='/' startIcon={<ArrowBack />}>
           Back to Home
         </Button>
         <Typography variant='h4' component='h1' gutterBottom>
-          Status Manager
+          Classification Manager
         </Typography>
         <Typography variant='body1' color='textSecondary'>
-          Define the workflow steps for your tasks. Drag to reorder.
+          Organize tasks by type or category.
         </Typography>
       </Box>
 
-      <Card>
-        <CardContent>
-          <Box
-            display='flex'
-            justifyContent='space-between'
-            alignItems='center'
-            mb={2}
+      <Paper>
+        <Box
+          p={2}
+          display='flex'
+          justifyContent='space-between'
+          alignItems='center'
+        >
+          <Typography variant='h6'>Task Classifications</Typography>
+          <Button
+            startIcon={<AddIcon />}
+            onClick={() => setIsAdding(true)}
+            size='small'
+            variant='contained'
           >
-            <Typography variant='h6'>Task Status Flow</Typography>
-            <Button
-              variant='contained'
-              startIcon={<AddIcon />}
-              onClick={() => setIsAdding(true)}
-              size='small'
-            >
-              Add Status
-            </Button>
-          </Box>
+            Add
+          </Button>
+        </Box>
 
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId='status-flow' direction='horizontal'>
-              {(provided) => (
-                <Stack
-                  direction='row'
-                  spacing={1}
-                  alignItems='center'
-                  sx={{ flexWrap: 'wrap', gap: 1 }}
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                >
-                  {sortedOptions.map((status, index) => {
-                    const isEditing = editingId === status.id
-                    return (
-                      <Draggable
-                        key={status.id}
-                        draggableId={status.id}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                          >
-                            {isEditing ? (
-                              <Box
-                                sx={{
-                                  minWidth: 200,
-                                  p: 1,
-                                  borderRadius: 2,
-                                  bgcolor: 'grey.200',
-                                }}
-                              >
-                                <OptionEditForm
-                                  option={status}
-                                  onSave={handleSave}
-                                  onCancel={() => setEditingId(null)}
-                                  onDelete={handleDelete}
-                                />
-                              </Box>
-                            ) : (
-                              <StatusItem
-                                status={status}
-                                isEditing={isEditing}
-                                onEdit={() => setEditingId(status.id)}
-                              />
-                            )}
-                          </div>
-                        )}
-                      </Draggable>
-                    )
-                  })}
-                  {provided.placeholder}
-                </Stack>
-              )}
-            </Droppable>
-          </DragDropContext>
-
-          {isAdding && (
-            <Box
-              sx={{
-                minWidth: 200,
-                p: 1,
-                mt: 2,
-                borderRadius: 2,
-                bgcolor: 'grey.200',
-              }}
-            >
-              <OptionEditForm
-                option={{}}
-                onSave={(newOption) => {
-                  handleSave(newOption)
-                  setIsAdding(false)
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId='classifications-list'>
+            {(provided) => (
+              // REPLACED the <List> with the new Grid standard
+              <Grid
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                sx={{
+                  display: 'grid',
+                  gap: 1, // Consistent spacing between items
+                  gridTemplateColumns: '1fr', // A single column layout
+                  p: 2, // Padding around the entire list
                 }}
-                onCancel={() => setIsAdding(false)}
-                isNew={true}
-              />
-            </Box>
-          )}
-        </CardContent>
-      </Card>
+              >
+                {sortedOptions.map((item, index) => {
+                  const isEditing = editingId === item.id
+                  return (
+                    <Draggable
+                      key={item.id}
+                      draggableId={item.id}
+                      index={index}
+                    >
+                      {(provided) => (
+                        // REPLACED <ListItem> with a <Box>
+                        <Box
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          {isEditing ? (
+                            <OptionEditForm
+                              option={item}
+                              onSave={handleSave}
+                              onCancel={() => setEditingId(null)}
+                              onDelete={handleDelete}
+                            />
+                          ) : (
+                            <ClassificationItem
+                              item={item}
+                              onEdit={() => setEditingId(item.id)}
+                            />
+                          )}
+                        </Box>
+                      )}
+                    </Draggable>
+                  )
+                })}
+                {provided.placeholder}
+              </Grid>
+            )}
+          </Droppable>
+        </DragDropContext>
+
+        {isAdding && (
+          <Box p={2}>
+            <OptionEditForm
+              option={{}}
+              onSave={(newOption) => {
+                handleSave(newOption)
+                setIsAdding(false)
+              }}
+              onCancel={() => setIsAdding(false)}
+              isNew={true}
+            />
+          </Box>
+        )}
+      </Paper>
     </Container>
   )
 }

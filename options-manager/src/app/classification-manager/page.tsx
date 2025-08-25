@@ -1,205 +1,107 @@
-// src/app/classification-manager/page.tsx
-'use client'
-
-import React, { useMemo } from 'react'
-import {
-  Container,
-  Typography,
-  Box,
-  Button,
-  List,
-  ListItem,
-  Paper,
-  IconButton,
-} from '@mui/material'
-import {
-  ArrowBack,
-  Add as AddIcon,
-  DragIndicator as DragIndicatorIcon,
-} from '@mui/icons-material'
 import Link from 'next/link'
 import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from '@hello-pangea/dnd'
-import { useOptionsManager } from '@/hooks/useOptionsManager'
-import { OptionEditForm } from '@/components/shared/OptionEditForm'
-import { getContrastColor } from '@/utils/colorUtils'
-import type { Option } from '@/types/options'
+  Box,
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  Button,
+  Grid,
+} from '@mui/material'
+import {
+  Assignment as StatusIcon,
+  PriorityHigh as PriorityIcon,
+  Category as ClassificationIcon,
+} from '@mui/icons-material'
 
-// Initial data for the page
-const initialClassifications: Option[] = [
-  {
-    id: '1',
-    name: 'BUG',
-    color: '#f44336',
-    order: 0,
-    active: true,
-    type: 'classification',
-  },
-  {
-    id: '2',
-    name: 'FEATURE',
-    color: '#2196f3',
-    order: 1,
-    active: true,
-    type: 'classification',
-  },
-  {
-    id: '3',
-    name: 'IMPROVEMENT',
-    color: '#ff9800',
-    order: 2,
-    active: true,
-    type: 'classification',
-  },
-  {
-    id: '4',
-    name: 'DOCUMENTATION',
-    color: '#795548',
-    order: 3,
-    active: true,
-    type: 'classification',
-  },
-]
-
-const ClassificationItem = React.memo(
-  ({ item, onEdit }: { item: Option; onEdit: () => void }) => {
-    const textColor = getContrastColor(item.color)
-    return (
-      <Box
-        display='flex'
-        alignItems='center'
-        width='100%'
-        onClick={onEdit}
-        sx={{ cursor: 'pointer' }}
-      >
-        <DragIndicatorIcon sx={{ mr: 1, color: 'text.disabled' }} />
-        <Box
-          sx={{
-            px: 1,
-            py: 0.5,
-            borderRadius: 1,
-            backgroundColor: item.color,
-            color: textColor,
-          }}
-        >
-          <Typography variant='body2' sx={{ fontWeight: 'bold' }}>
-            {item.name}
-          </Typography>
-        </Box>
-      </Box>
-    )
-  }
-)
-
-export default function ClassificationManagerPage() {
-  const {
-    options,
-    editingId,
-    setEditingId,
-    handleReorder,
-    handleSave,
-    handleDelete,
-  } = useOptionsManager(initialClassifications)
-  const [isAdding, setIsAdding] = React.useState(false)
-
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) return
-    handleReorder(result.source.index, result.destination.index)
-  }
-
-  const sortedOptions = useMemo(
-    () => [...options].sort((a, b) => a.order - b.order),
-    [options]
-  )
+export default function Home() {
+  const demoPages = [
+    {
+      title: 'Status Manager',
+      description: 'Manage task statuses in a workflow.',
+      href: '/status-manager',
+      icon: <StatusIcon sx={{ fontSize: 48 }} />,
+      color: '#4caf50',
+    },
+    {
+      title: 'Priority Manager',
+      description: 'Configure priority levels for tasks.',
+      href: '/priority-manager',
+      icon: <PriorityIcon sx={{ fontSize: 48 }} />,
+      color: '#ff9800',
+    },
+    {
+      title: 'Classification Manager',
+      description: 'Set up task classifications and categories.',
+      href: '/classification-manager',
+      icon: <ClassificationIcon sx={{ fontSize: 48 }} />,
+      color: '#9c27b0',
+    },
+  ]
 
   return (
-    <Container maxWidth='md' sx={{ py: 4 }}>
-      <Box mb={4}>
-        <Button component={Link} href='/' startIcon={<ArrowBack />}>
-          Back to Home
-        </Button>
-        <Typography variant='h4' component='h1' gutterBottom>
-          Classification Manager
+    <Container maxWidth='lg' sx={{ py: 4 }}>
+      <Box sx={{ textAlign: 'center', mb: 6 }}>
+        <Typography variant='h3' component='h1' gutterBottom>
+          Project Configuration Demos
         </Typography>
-        <Typography variant='body1' color='textSecondary'>
-          Organize tasks by type or category.
+        <Typography variant='h6' color='textSecondary'>
+          A showcase of refactored, reusable, and accessible components.
         </Typography>
       </Box>
 
-      <Paper>
-        <Box p={2} display='flex' justifyContent='space-between'>
-          <Typography variant='h6'>Task Classifications</Typography>
-          <Button
-            startIcon={<AddIcon />}
-            onClick={() => setIsAdding(true)}
-            size='small'
-            variant='contained'
-          >
-            Add
-          </Button>
-        </Box>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId='classifications-list'>
-            {(provided) => (
-              <List {...provided.droppableProps} ref={provided.innerRef}>
-                {sortedOptions.map((item, index) => {
-                  const isEditing = editingId === item.id
-                  return (
-                    <Draggable
-                      key={item.id}
-                      draggableId={item.id}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <ListItem
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
-                          {isEditing ? (
-                            <Box width='100%'>
-                              <OptionEditForm
-                                option={item}
-                                onSave={handleSave}
-                                onCancel={() => setEditingId(null)}
-                                onDelete={handleDelete}
-                              />
-                            </Box>
-                          ) : (
-                            <ClassificationItem
-                              item={item}
-                              onEdit={() => setEditingId(item.id)}
-                            />
-                          )}
-                        </ListItem>
-                      )}
-                    </Draggable>
-                  )
-                })}
-                {provided.placeholder}
-              </List>
-            )}
-          </Droppable>
-        </DragDropContext>
+      <Grid container spacing={4}>
+        {demoPages.map((page) => (
+          <Box
+            key={page.href}
+            sx={{
+              width: { xs: '100%', sm: '50%', md: '33.333%' },
 
-        {isAdding && (
-          <Box p={2}>
-            <OptionEditForm
-              option={{}}
-              onSave={(newOption) => {
-                handleSave(newOption)
-                setIsAdding(false)
+              padding: 2,
+            }}
+          >
+            <Card
+              sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                transition:
+                  'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: 4,
+                },
               }}
-              onCancel={() => setIsAdding(false)}
-              isNew={true}
-            />
+            >
+              <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 3 }}>
+                <Box sx={{ mb: 2, color: page.color }}>{page.icon}</Box>
+                <Typography variant='h6' component='h2' gutterBottom>
+                  {page.title}
+                </Typography>
+                <Typography variant='body2' color='textSecondary' paragraph>
+                  {page.description}
+                </Typography>
+                <Button
+                  component={Link}
+                  href={page.href}
+                  variant='contained'
+                  fullWidth
+                  sx={{
+                    mt: 'auto',
+                    backgroundColor: page.color,
+                    '&:hover': {
+                      backgroundColor: page.color,
+                      filter: 'brightness(0.9)',
+                    },
+                  }}
+                >
+                  View Demo
+                </Button>
+              </CardContent>
+            </Card>
           </Box>
-        )}
-      </Paper>
+        ))}
+      </Grid>
     </Container>
   )
 }

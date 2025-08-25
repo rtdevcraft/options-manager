@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import {
   Box,
@@ -50,43 +52,60 @@ export default function Home() {
         </Typography>
       </Box>
 
-      <Grid container spacing={4}>
+      {/* REPLACED the old Grid system with the new, working approach */}
+      <Grid
+        sx={{
+          display: 'grid',
+          gap: 4, // This replaces the old `spacing={4}` prop
+          gridTemplateColumns: {
+            xs: 'repeat(1, 1fr)', // 1 column on extra-small screens
+            sm: 'repeat(2, 1fr)', // 2 columns on small screens
+            md: 'repeat(3, 1fr)', // 3 columns on medium screens
+          },
+        }}
+      >
         {demoPages.map((page) => (
-          <Grid item xs={12} sm={6} md={4} key={page.href}>
-            <Card
-              sx={
-                {
-                  /* ... card styles ... */
-                }
-              }
-            >
-              <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 3 }}>
-                <Box sx={{ mb: 2, color: page.color }}>{page.icon}</Box>
-                <Typography variant='h6' component='h2' gutterBottom>
-                  {page.title}
-                </Typography>
-                <Typography variant='body2' color='textSecondary' paragraph>
-                  {page.description}
-                </Typography>
-                <Button
-                  component={Link}
-                  href={page.href}
-                  variant='contained'
-                  fullWidth
-                  sx={{
-                    mt: 'auto',
+          // The Card is now the direct child of the grid
+          <Card
+            key={page.href} // The key is now on the Card
+            sx={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              transition:
+                'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: 4,
+              },
+            }}
+          >
+            <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 3 }}>
+              <Box sx={{ mb: 2, color: page.color }}>{page.icon}</Box>
+              <Typography variant='h6' component='h2' gutterBottom>
+                {page.title}
+              </Typography>
+              <Typography variant='body2' color='textSecondary' paragraph>
+                {page.description}
+              </Typography>
+              <Button
+                component={Link}
+                href={page.href}
+                variant='contained'
+                fullWidth
+                sx={{
+                  mt: 'auto',
+                  backgroundColor: page.color,
+                  '&:hover': {
                     backgroundColor: page.color,
-                    '&:hover': {
-                      backgroundColor: page.color,
-                      filter: 'brightness(0.9)',
-                    },
-                  }}
-                >
-                  View Demo
-                </Button>
-              </CardContent>
-            </Card>
-          </Grid>
+                    filter: 'brightness(0.9)',
+                  },
+                }}
+              >
+                View Demo
+              </Button>
+            </CardContent>
+          </Card>
         ))}
       </Grid>
     </Container>
