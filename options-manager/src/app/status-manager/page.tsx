@@ -1,7 +1,8 @@
+// app/status-manager/page.tsx
 'use client'
 
 import React, { useMemo } from 'react'
-import { Container, Typography, Box, Button, Grid, Paper } from '@mui/material' // Added Grid and Paper
+import { Container, Typography, Box, Button, Grid, Paper } from '@mui/material'
 import {
   ArrowBack,
   Add as AddIcon,
@@ -19,43 +20,35 @@ import { OptionEditForm } from '@/components/shared/OptionEditForm'
 import { getContrastColor } from '@/utils/colorUtils'
 import type { Option } from '@/types/options'
 
-// Initial data for the page
-const initialClassifications: Option[] = [
+// Initial data for the Status Manager page
+const initialStatuses: Option[] = [
   {
     id: '1',
-    name: 'BUG',
-    color: '#f44336',
+    name: 'TO DO',
+    color: '#9e9e9e',
     order: 0,
     active: true,
-    type: 'classification',
+    type: 'status',
   },
   {
     id: '2',
-    name: 'FEATURE',
+    name: 'IN PROGRESS',
     color: '#2196f3',
     order: 1,
     active: true,
-    type: 'classification',
+    type: 'status',
   },
   {
     id: '3',
-    name: 'IMPROVEMENT',
-    color: '#ff9800',
+    name: 'DONE',
+    color: '#4caf50',
     order: 2,
     active: true,
-    type: 'classification',
-  },
-  {
-    id: '4',
-    name: 'DOCUMENTATION',
-    color: '#795548',
-    order: 3,
-    active: true,
-    type: 'classification',
+    type: 'status',
   },
 ]
 
-const ClassificationItem = React.memo(
+const StatusItem = React.memo(
   ({ item, onEdit }: { item: Option; onEdit: () => void }) => {
     const textColor = getContrastColor(item.color)
     return (
@@ -66,7 +59,7 @@ const ClassificationItem = React.memo(
         onClick={onEdit}
         sx={{
           cursor: 'pointer',
-          p: 1, // Add some padding for better click area
+          p: 1,
           borderRadius: 1,
           '&:hover': { backgroundColor: 'action.hover' },
         }}
@@ -91,9 +84,9 @@ const ClassificationItem = React.memo(
     )
   }
 )
-ClassificationItem.displayName = 'ClassificationItem'
+StatusItem.displayName = 'StatusItem'
 
-export default function ClassificationManagerPage() {
+export default function StatusManagerPage() {
   const {
     options,
     editingId,
@@ -101,7 +94,7 @@ export default function ClassificationManagerPage() {
     handleReorder,
     handleSave,
     handleDelete,
-  } = useOptionsManager(initialClassifications)
+  } = useOptionsManager(initialStatuses)
   const [isAdding, setIsAdding] = React.useState(false)
 
   const onDragEnd = (result: DropResult) => {
@@ -121,10 +114,10 @@ export default function ClassificationManagerPage() {
           Back to Home
         </Button>
         <Typography variant='h4' component='h1' gutterBottom>
-          Classification Manager
+          Status Manager
         </Typography>
         <Typography variant='body1' color='textSecondary'>
-          Organize tasks by type or category.
+          Manage the different stages of your workflow.
         </Typography>
       </Box>
 
@@ -135,7 +128,7 @@ export default function ClassificationManagerPage() {
           justifyContent='space-between'
           alignItems='center'
         >
-          <Typography variant='h6'>Task Classifications</Typography>
+          <Typography variant='h6'>Task Statuses</Typography>
           <Button
             startIcon={<AddIcon />}
             onClick={() => setIsAdding(true)}
@@ -147,17 +140,16 @@ export default function ClassificationManagerPage() {
         </Box>
 
         <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId='classifications-list'>
+          <Droppable droppableId='statuses-list'>
             {(provided) => (
-              // REPLACED the <List> with the new Grid standard
               <Grid
                 ref={provided.innerRef}
                 {...provided.droppableProps}
                 sx={{
                   display: 'grid',
-                  gap: 1, // Consistent spacing between items
-                  gridTemplateColumns: '1fr', // A single column layout
-                  p: 2, // Padding around the entire list
+                  gap: 1,
+                  gridTemplateColumns: '1fr',
+                  p: 2,
                 }}
               >
                 {sortedOptions.map((item, index) => {
@@ -169,7 +161,6 @@ export default function ClassificationManagerPage() {
                       index={index}
                     >
                       {(provided) => (
-                        // REPLACED <ListItem> with a <Box>
                         <Box
                           ref={provided.innerRef}
                           {...provided.draggableProps}
@@ -183,7 +174,7 @@ export default function ClassificationManagerPage() {
                               onDelete={handleDelete}
                             />
                           ) : (
-                            <ClassificationItem
+                            <StatusItem
                               item={item}
                               onEdit={() => setEditingId(item.id)}
                             />
