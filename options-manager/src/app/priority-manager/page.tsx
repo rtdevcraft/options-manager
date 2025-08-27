@@ -128,7 +128,7 @@ export default function PriorityManagerPage() {
             size='small'
             startIcon={<AddIcon />}
             onClick={() => setIsAdding(true)}
-            disabled={isAdding}
+            disabled={isAdding || !!editingId}
           >
             Add Priority
           </Button>

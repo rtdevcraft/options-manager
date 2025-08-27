@@ -73,6 +73,7 @@ export const OptionEditForm: React.FC<OptionEditFormProps> = ({
       onClick={(e) => e.stopPropagation()}
     >
       <TextField
+        label='Name'
         value={name}
         onChange={(e) => setName(e.target.value)}
         size='small'

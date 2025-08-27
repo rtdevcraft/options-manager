@@ -13,7 +13,6 @@ export function useOptionsManager(
   const [options, setOptions] = useState<Option[]>(initialOptions)
   const [editingId, setEditingId] = useState<string | null>(null)
 
-  // Reorders the options array based on drag-and-drop indices.
   const handleReorder = useCallback(
     (startIndex: number, endIndex: number) => {
       setOptions((prevOptions) => {
@@ -21,13 +20,11 @@ export function useOptionsManager(
         const [removed] = reordered.splice(startIndex, 1)
         reordered.splice(endIndex, 0, removed)
 
-        // Re-assign the 'order' property to reflect the new sequence.
         const updated = reordered.map((opt, index) => ({
           ...opt,
           order: index,
         }))
 
-        // Optionally, trigger the save callback immediately after reordering.
         if (onSaveCallback) {
           onSaveCallback(updated)
         }
@@ -37,35 +34,36 @@ export function useOptionsManager(
     [onSaveCallback]
   )
 
-  // Updates the options array with a new or modified option.
   const handleSave = useCallback(
-    async (updatedOption: Option) => {
+    async (optionToSave: Partial<Option>) => {
       let newOptions: Option[] = []
 
-      // Check if the option already exists to decide whether to update or add.
-      const exists = options.some((opt) => opt.id === updatedOption.id)
+      setOptions((currentOptions) => {
+        if (optionToSave.id) {
+          newOptions = currentOptions.map((opt) =>
+            opt.id === optionToSave.id ? { ...opt, ...optionToSave } : opt
+          )
+        } else {
+          const newOptionWithDefaults: Option = {
+            id: Date.now().toString(),
+            order: currentOptions.length,
+            active: true,
+            ...optionToSave,
+          } as Option
+          newOptions = [...currentOptions, newOptionWithDefaults]
+        }
+        return newOptions
+      })
 
-      if (exists) {
-        // Update the existing option.
-        newOptions = options.map((opt) =>
-          opt.id === updatedOption.id ? updatedOption : opt
-        )
-      } else {
-        // Add the new option to the end.
-        newOptions = [...options, { ...updatedOption, order: options.length }]
-      }
-
-      setOptions(newOptions)
-      setEditingId(null) // Exit editing mode after saving.
+      setEditingId(null)
 
       if (onSaveCallback) {
-        await onSaveCallback(newOptions)
+        setTimeout(() => onSaveCallback(newOptions), 0)
       }
     },
-    [options, onSaveCallback]
+    [onSaveCallback]
   )
 
-  // Deletes an option by its ID.
   const handleDelete = useCallback(
     (id: string) => {
       if (options.length <= 1) {
@@ -76,7 +74,7 @@ export function useOptionsManager(
       if (window.confirm('Are you sure you want to delete this option?')) {
         const updated = options
           .filter((opt) => opt.id !== id)
-          .map((opt, index) => ({ ...opt, order: index })) // Re-assign order after deletion.
+          .map((opt, index) => ({ ...opt, order: index }))
 
         setOptions(updated)
 
@@ -88,11 +86,10 @@ export function useOptionsManager(
     [options, onSaveCallback]
   )
 
-  // Return the state and the handler functions so components can use them.
   return {
     options,
     editingId,
-    setEditingId, // Expose this to allow components to enter/exit edit mode.
+    setEditingId,
     handleReorder,
     handleSave,
     handleDelete,

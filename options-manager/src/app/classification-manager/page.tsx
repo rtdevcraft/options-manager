@@ -1,13 +1,8 @@
-// app/classification-manager/page.tsx
 'use client'
 
 import React, { useMemo } from 'react'
 import { Container, Typography, Box, Button, Grid, Paper } from '@mui/material'
-import {
-  ArrowBack,
-  Add as AddIcon,
-  DragIndicator as DragIndicatorIcon,
-} from '@mui/icons-material'
+import { ArrowBack, Add as AddIcon } from '@mui/icons-material'
 import Link from 'next/link'
 import {
   DragDropContext,
@@ -17,8 +12,8 @@ import {
 } from '@hello-pangea/dnd'
 import { useOptionsManager } from '@/hooks/useOptionsManager'
 import { OptionEditForm } from '@/components/shared/OptionEditForm'
-import { getContrastColor } from '@/utils/colorUtils'
 import type { Option } from '@/types/options'
+import { ClassificationItem } from './ClassificationItem' // <-- The new import
 
 // Initial data for the page
 const initialClassifications: Option[] = [
@@ -55,44 +50,6 @@ const initialClassifications: Option[] = [
     type: 'classification',
   },
 ]
-
-export const ClassificationItem = React.memo(
-  ({ item, onEdit }: { item: Option; onEdit: () => void }) => {
-    const textColor = getContrastColor(item.color)
-    return (
-      <Box
-        display='flex'
-        alignItems='center'
-        width='100%'
-        onClick={onEdit}
-        sx={{
-          cursor: 'pointer',
-          p: 1,
-          borderRadius: 1,
-          '&:hover': { backgroundColor: 'action.hover' },
-        }}
-      >
-        <DragIndicatorIcon
-          sx={{ mr: 1, color: 'text.disabled', cursor: 'grab' }}
-        />
-        <Box
-          sx={{
-            px: 1,
-            py: 0.5,
-            borderRadius: 1,
-            backgroundColor: item.color,
-            color: textColor,
-          }}
-        >
-          <Typography variant='body2' sx={{ fontWeight: 'bold' }}>
-            {item.name}
-          </Typography>
-        </Box>
-      </Box>
-    )
-  }
-)
-ClassificationItem.displayName = 'ClassificationItem'
 
 export default function ClassificationManagerPage() {
   const {
