@@ -69,4 +69,25 @@ describe('useOptionsManager', () => {
     expect(result.current.options[0].name).toBe('Second')
     expect(result.current.options[1].name).toBe('First')
   })
+
+  it('should call the onSaveCallback after saving', async () => {
+    vi.useFakeTimers()
+
+    const onSaveCallback = vi.fn(() => Promise.resolve())
+    const { result } = renderHook(() =>
+      useOptionsManager(initialTestOptions, onSaveCallback)
+    )
+
+    const updatedOption = { id: '1', name: 'Updated' }
+
+    await act(async () => {
+      await result.current.handleSave(updatedOption)
+    })
+
+    await vi.runAllTimersAsync()
+
+    expect(onSaveCallback).toHaveBeenCalled()
+
+    vi.useRealTimers()
+  })
 })
